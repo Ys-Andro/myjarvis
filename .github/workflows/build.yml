@@ -19,8 +19,16 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew
+      - name: Generate Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.2 || true
+          if [ ! -f gradlew ]; then
+            curl -sL https://services.gradle.org/distributions/gradle-8.2-bin.zip -o gradle.zip
+            unzip -q gradle.zip
+            ./gradle-8.2/bin/gradle wrapper --gradle-version 8.2
+            rm -rf gradle-8.2 gradle.zip
+          fi
+          chmod +x gradlew
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace
