@@ -20,23 +20,50 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Gradle
+      - name: Accept Android Licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Install required SDK packages
         run: |
-          wget -q https://services.gradle.org/distributions/gradle-8.2-bin.zip
-          unzip -q gradle-8.2-bin.zip
-          echo "GRADLE_HOME=$PWD/gradle-8.2" >> $GITHUB_ENV
-          echo "$PWD/gradle-8.2/bin" >> $GITHUB_PATH
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" || true
+
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: Install Gradle 8.2
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.2-bin.zip -O gradle.zip
+          unzip -q gradle.zip
+          export PATH=$PWD/gradle-8.2/bin:$PATH
+          echo "PATH=$PWD/gradle-8.2/bin:$PATH" >> $GITHUB_ENV
+          gradle --version
 
       - name: Generate Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.2
+          gradle wrapper --gradle-version 8.2 --distribution-type bin
           chmod +x gradlew
+          ls -la
+
+      - name: Check project structure
+        run: |
+          echo "=== Root files ==="
+          ls -la
+          echo "=== Looking for build.gradle ==="
+          find . -name "build.gradle*" || true
+          echo "=== Looking for settings.gradle ==="
+          find . -name "settings.gradle*" || true
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          ./gradlew clean assembleDebug --stacktrace --info
+        continue-on-error: false
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: OpenJarvis-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            **/build/outputs/apk/debug/*.apk
