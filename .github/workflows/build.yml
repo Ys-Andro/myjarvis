@@ -20,15 +20,20 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.2'
+      - name: Install Gradle
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.2-bin.zip
+          unzip -q gradle-8.2-bin.zip
+          echo "GRADLE_HOME=$PWD/gradle-8.2" >> $GITHUB_ENV
+          echo "$PWD/gradle-8.2/bin" >> $GITHUB_PATH
+
+      - name: Generate Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.2
+          chmod +x gradlew
 
       - name: Build Debug APK
-        run: |
-          chmod +x gradlew || true
-          ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
