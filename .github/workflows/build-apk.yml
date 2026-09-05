@@ -37,13 +37,22 @@ jobs:
       - name: Generate Gradle Wrapper
         run: gradle wrapper --gradle-version 8.2
 
-      - name: Enable AndroidX
+      - name: Configure Gradle memory & enable AndroidX
         run: |
+          echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError" >> $GITHUB_WORKSPACE/gradle.properties
           echo "android.useAndroidX=true" >> $GITHUB_WORKSPACE/gradle.properties
           echo "android.enableJetifier=true" >> $GITHUB_WORKSPACE/gradle.properties
+          echo "org.gradle.parallel=false" >> $GITHUB_WORKSPACE/gradle.properties
+
+      - name: Set GRADLE_OPTS
+        run: |
+          echo "GRADLE_OPTS=-Xmx2048m" >> $GITHUB_ENV
+
+      - name: Clean Gradle
+        run: ./gradlew clean --no-daemon
 
       - name: Build APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --stacktrace --info --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
