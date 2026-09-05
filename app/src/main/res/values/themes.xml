@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.OpenJarvis" parent="Theme.Material3.Light.NoActionBar">
+    <!-- Usar Theme.MaterialComponents en vez de Theme.Material3 para resolver referencias de atributos en recursos XML -->
+    <style name="Theme.OpenJarvis" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
